@@ -78,6 +78,7 @@ jobs:
           name: Linux-X64-binary
           # Destination path
           path: /tmp
+      - run: ls /tmp
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "/tmp/Linux-X64-binary"
