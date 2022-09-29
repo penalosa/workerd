@@ -1,9 +1,6 @@
 name: Tests
 
 on:
-  pull_request:
-    paths-ignore:
-    - 'doc/**'
   push:
     branches:
     - main
@@ -28,7 +25,7 @@ jobs:
       - id: echo
         run: |
           echo "::set-output name=version::1.$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '-' | tr -d '"').0"
-  linux:
+  build:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -62,7 +59,7 @@ jobs:
   release:
     # if: ${{ github.repository_owner == 'cloudflare' }}
     name: Release
-    needs: [version, linux]
+    needs: [version, build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
