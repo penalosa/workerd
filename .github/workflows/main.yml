@@ -48,6 +48,7 @@ jobs:
             mkdir -p ~/.cache/bazel
             export DEBIAN_FRONTEND=noninteractive
             sudo apt-get install -y build-essential git clang libc++-dev
+        if: ${{ runner.os == 'Linux' }}
 
       - name: build
         run: |
