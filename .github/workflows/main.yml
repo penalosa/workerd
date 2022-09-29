@@ -49,12 +49,12 @@ jobs:
 
       - name: build
         run: |
-            bazel build --remote_timeout=5 --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.s.workers.dev @capnp-cpp//src/capnp:capnp_tool
+            bazel build --remote_timeout=5 --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.s.workers.dev -c opt //src/workerd/server:workerd
       - name: Upload binary
         uses: actions/upload-artifact@v3.1.0
         with:
           name: ${{ runner.os }}-${{ runner.arch }}-binary
-          path: bazel-bin/external/capnp-cpp/src/capnp/capnp_tool
+          path: bazel-bin/src/workerd/server/workerd
           
   release:
     # if: ${{ github.repository_owner == 'cloudflare' }}
@@ -78,11 +78,19 @@ jobs:
           # Artifact name
           name: Linux-X64-binary
           # Destination path
-          path: /tmp/linux-64
-      - run: ls /tmp
+          path: /tmp
+      - run: mv /tmp/workerd /tmp/workerd-linux-64
+      - name: Download darwin
+        uses: actions/download-artifact@v3.0.0
+        with:
+          # Artifact name
+          name: macOS-X64-binary
+          # Destination path
+          path: /tmp
+      - run: mv /tmp/workerd /tmp/workerd-darwin-64
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "/tmp/linux-64/capnp_tool"
+          artifacts: "/tmp/workerd-darwin-64,/tmp/workerd-linux-64"
           generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: v${{ needs.version.outputs.version }}
