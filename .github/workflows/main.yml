@@ -77,11 +77,11 @@ jobs:
           # Artifact name
           name: Linux-X64-binary
           # Destination path
-          path: /tmp
+          path: /tmp/linux-64
       - run: ls /tmp
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "/tmp/Linux-X64-binary"
+          artifacts: "/tmp/linux-64/capnp_tool"
           generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: v${{ needs.version.outputs.version }}
