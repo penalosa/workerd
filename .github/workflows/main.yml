@@ -1,0 +1,97 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  version: 
+    outputs:
+      version: ${{ steps.echo.outputs.version }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v2
+      - name: Cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ~/bazel-disk-cache
+          key: capnp-cache
+      - name: build capnp
+        run: |
+          bazel build --remote_timeout=5 --disk_cache=~/bazel-disk-cache --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.workers.dev @capnp-cpp//src/capnp:capnp_tool
+      - id: echo
+        run: |
+          echo "::set-output name=version::1.$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '-' | tr -d '"').0"
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v2
+      - name: Cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ~/bazel-disk-cache
+          key: ${{ runner.os }}-${{ runner.arch }}-bazel-disk-cache
+          
+      - name: install dependencies
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+            export DEBIAN_FRONTEND=noninteractive
+            sudo apt-get install -y build-essential git clang libc++-dev
+
+      - name: build
+        run: |
+            bazel build --remote_timeout=5 --disk_cache=~/bazel-disk-cache  --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.workers.dev -c opt //src/workerd/server:workerd
+      - name: Upload binary
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-binary
+          path: bazel-bin/src/workerd/server/workerd
+          
+  release:
+    name: Release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Tag with compatibility date
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ needs.version.outputs.version }}
+      - name: Download linux
+        uses: actions/download-artifact@v3.0.0
+        with:
+          name: Linux-X64-binary
+          path: /tmp
+      - run: mv /tmp/workerd /tmp/workerd-linux-64
+      - name: Download darwin
+        uses: actions/download-artifact@v3.0.0
+        with:
+          name: macOS-X64-binary
+          path: /tmp
+      - run: mv /tmp/workerd /tmp/workerd-darwin-64
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "/tmp/workerd-darwin-64,/tmp/workerd-linux-64"
+          generateReleaseNotes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ needs.version.outputs.version }}
+  
+          
+          
+      
+          
+          
+          
