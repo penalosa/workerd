@@ -58,7 +58,7 @@ jobs:
     name: Check tag is new
     outputs:
       exists: ${{ steps.check_tag.outputs.exists }}
-    needs: [version, build]
+    # needs: [version, build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -68,7 +68,7 @@ jobs:
       - uses: mukunku/tag-exists-action@v1.1.0
         id: check_tag
         with: 
-          tag: v${{ needs.version.outputs.version }}
+          tag: v1.20221109.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
@@ -76,9 +76,9 @@ jobs:
     name: Tag & Release
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-    needs: [check-tag, version, build]
+    needs: [check-tag]
     runs-on: ubuntu-latest
-    if: needs.check-tag.outputs.exists != true
+    if: needs.check-tag.outputs.exists != 'true'
     steps:
       - run: echo ${{ needs.check-tag.outputs.exists }}
       - name: Checkout Repo
