@@ -1,0 +1,63 @@
+name: Publish to NPM
+on:
+# Since we still need to manually upload binaries, use manual run
+# Ideally this would trigger off `release`
+  workflow_dispatch:
+
+jobs:
+  version: 
+    outputs:
+      version: ${{ steps.echo.outputs.version }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v2
+      - name: Cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ~/bazel-disk-cache
+          key: capnp-cache
+      - name: build capnp
+        run: |
+          bazel build --remote_timeout=5 --disk_cache=~/bazel-disk-cache --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.workers.dev @capnp-cpp//src/capnp:capnp_tool
+      - id: echo
+        run: |
+          echo "::set-output name=version::1.$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '-' | tr -d '"').0"
+          echo "::set-output name=date::$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '"')"
+
+  publish:
+    # if: ${{ github.repository_owner == 'cloudflare' }}
+    name: Publish a release to NPM
+    needs: version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        type: [darwin-64,linux-64]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Use Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Modify package.json version
+        run: node npm/scripts/bump-version.mjs npm/workerd-${{ matrix.type }}/package.json
+        env:
+          WORKERD_VERSION: ${{ needs.version.outputs.version }}
+          LATEST_COMPATIBILITY_DATE: ${{ needs.version.outputs.date }}
+      - uses: robinraju/release-downloader@v1.5
+        with: 
+          tag: v${{ needs.version.outputs.version }}
+          fileName: "*"
+          tarBall: false
+          zipBall: false
+          out-file-path: "release-downloads"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - run: ls $GITHUB_WORKSPACE/release-downloads
+      - run: cat npm/workerd-${{ matrix.type }}/package.json
