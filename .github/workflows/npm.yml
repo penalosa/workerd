@@ -28,7 +28,7 @@ jobs:
 
   publish-arch-specific:
     # if: ${{ github.repository_owner == 'cloudflare' }}
-    name: Publish a release to NPM
+    name: Publish arch-specific packages to npm
     needs: version
     runs-on: ubuntu-latest
     strategy:
@@ -61,13 +61,14 @@ jobs:
       - run: chmod +x $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }}
       - run: mkdir npm/workerd-${{ matrix.arch }}/bin
       - run: cp $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }} npm/workerd-${{ matrix.arch }}/bin/workerd
+      - run: echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
       - run: cd npm/workerd-${{ matrix.arch }} && npm publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
   publish-wrapper:
     # if: ${{ github.repository_owner == 'cloudflare' }}
-    name: Publish a release to NPM
+    name: Publish `workerd` to NPM
     needs: [version, publish-arch-specific]
     runs-on: ubuntu-latest
     steps:
@@ -108,7 +109,7 @@ jobs:
         env:
           WORKERD_VERSION: ${{ needs.version.outputs.version }}
           LATEST_COMPATIBILITY_DATE: ${{ needs.version.outputs.date }}
-
+      - run: echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
       - run: cd npm/workerd && npm publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
