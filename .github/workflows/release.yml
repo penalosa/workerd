@@ -54,13 +54,31 @@ jobs:
         with:
           name: ${{ runner.os }}-${{ runner.arch }}-binary
           path: bazel-bin/src/workerd/server/workerd
-          
+  check-tag:
+    name: Check tag is new
+    outputs:
+      exists: ${{ steps.check_tag.outputs.exists }}
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: mukunku/tag-exists-action@v1.1.0
+        id: check_tag
+        with: 
+          tag: v${{ needs.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
   tag-and-release:
     name: Tag & Release
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-    needs: [version, build]
+    needs: [check-tag, version, build]
     runs-on: ubuntu-latest
+    if: ${{ needs.check-tag.outputs.exists }} != true
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
