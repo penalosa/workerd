@@ -78,7 +78,7 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     needs: [check-tag, version, build]
     runs-on: ubuntu-latest
-    if: ${{ needs.check-tag.outputs.exists }} != 'true'
+    if: needs.check-tag.outputs.exists != true
     steps:
       - run: echo ${{ needs.check-tag.outputs.exists }}
       - name: Checkout Repo
