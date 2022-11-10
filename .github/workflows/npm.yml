@@ -62,7 +62,7 @@ jobs:
       - run: mkdir npm/workerd-${{ matrix.arch }}/bin
       - run: cp $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }} npm/workerd-${{ matrix.arch }}/bin/workerd
       - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > npm/workerd-${{ matrix.arch }}/.npmrc
-      - run: cd npm/workerd-${{ matrix.arch }} && npm publish
+      - run: cd npm/workerd-${{ matrix.arch }} && npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
@@ -110,6 +110,6 @@ jobs:
           WORKERD_VERSION: ${{ needs.version.outputs.version }}
           LATEST_COMPATIBILITY_DATE: ${{ needs.version.outputs.date }}
       - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > npm/workerd/.npmrc
-      - run: cd npm/workerd && npm publish
+      - run: cd npm/workerd && npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
