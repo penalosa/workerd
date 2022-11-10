@@ -1,5 +1,5 @@
 {
-  "name": "workerd",
+  "name": "@penalosa/workerd",
   "version": "1.20220926.0",
   "description": "👷 workerd, Cloudflare's JavaScript/Wasm Runtime",
   "repository": "https://github.com/cloudflare/workerd",
