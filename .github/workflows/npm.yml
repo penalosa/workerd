@@ -61,11 +61,9 @@ jobs:
       - run: chmod +x $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }}
       - run: mkdir npm/workerd-${{ matrix.arch }}/bin
       - run: cp $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }} npm/workerd-${{ matrix.arch }}/bin/workerd
-
-      - run: ls npm/workerd-${{ matrix.arch }}
-      - run: ls npm/workerd-${{ matrix.arch }}/bin
-      - run: cat npm/workerd-${{ matrix.arch }}/package.json
       - run: cd npm/workerd-${{ matrix.arch }} && npm publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
   publish-wrapper:
     # if: ${{ github.repository_owner == 'cloudflare' }}
@@ -111,8 +109,6 @@ jobs:
           WORKERD_VERSION: ${{ needs.version.outputs.version }}
           LATEST_COMPATIBILITY_DATE: ${{ needs.version.outputs.date }}
 
-      - run: ls npm/workerd
-      - run: ls npm/workerd/bin
-      - run: cat npm/workerd/package.json
       - run: cd npm/workerd && npm publish
-
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
