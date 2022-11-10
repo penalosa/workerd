@@ -59,13 +59,13 @@ jobs:
           out-file-path: "release-downloads"
           token: ${{ secrets.GITHUB_TOKEN }}
       - run: chmod +x $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }}
-      - run: mkdir npm/workerd-${{ matrix.type }}/bin
-      - run: cp $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }} npm/workerd-${{ matrix.type }}/bin/workerd
+      - run: mkdir npm/workerd-${{ matrix.arch }}/bin
+      - run: cp $GITHUB_WORKSPACE/release-downloads/workerd-${{ matrix.arch }} npm/workerd-${{ matrix.arch }}/bin/workerd
 
-      - run: ls npm/workerd-${{ matrix.type }}
-      - run: ls npm/workerd-${{ matrix.type }}/bin
-      - run: cat npm/workerd-${{ matrix.type }}/package.json
-      - run: cd npm/workerd-${{ matrix.type }} && npm publish
+      - run: ls npm/workerd-${{ matrix.arch }}
+      - run: ls npm/workerd-${{ matrix.arch }}/bin
+      - run: cat npm/workerd-${{ matrix.arch }}/package.json
+      - run: cd npm/workerd-${{ matrix.arch }} && npm publish
 
   publish-wrapper:
     # if: ${{ github.repository_owner == 'cloudflare' }}
