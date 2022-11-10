@@ -21,7 +21,7 @@ jobs:
           key: capnp-cache
       - name: build capnp
         run: |
-          bazel build --remote_timeout=5 --disk_cache=~/bazel-disk-cache --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.workers.dev @capnp-cpp//src/capnp:capnp_tool
+          bazel build --disk_cache=~/bazel-disk-cache --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.cloudflare.dev @capnp-cpp//src/capnp:capnp_tool
       - id: echo
         run: |
           echo "::set-output name=version::1.$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '-' | tr -d '"').0"
@@ -48,7 +48,7 @@ jobs:
 
       - name: build
         run: |
-            bazel build --remote_timeout=5 --disk_cache=~/bazel-disk-cache  --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.workers.dev -c opt //src/workerd/server:workerd
+            bazel build --disk_cache=~/bazel-disk-cache  --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.cloudflare.dev -c opt //src/workerd/server:workerd
       - name: Upload binary
         uses: actions/upload-artifact@v3.1.0
         with:
