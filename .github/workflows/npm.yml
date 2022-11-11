@@ -21,10 +21,8 @@ jobs:
       - name: build capnp
         run: |
           bazel build --disk_cache=~/bazel-disk-cache --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.cloudflare.dev @capnp-cpp//src/capnp:capnp_tool
-      - id: echo
-        run: |
-          echo "::set-output name=version::1.$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '-' | tr -d '"').0"
-          echo "::set-output name=date::$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '"')"
+      - run: echo "::set-output name=version::1.$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '-' | tr -d '"').0"
+      - run: echo "::set-output name=date::$(bazel-bin/external/capnp-cpp/src/capnp/capnp_tool eval src/workerd/io/compatibility-date.capnp supportedCompatibilityDate | tr -d '"')"
 
   publish-arch-specific:
     # if: ${{ github.repository_owner == 'cloudflare' }}
