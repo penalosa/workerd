@@ -27,13 +27,18 @@ js_run_binary(
     name = "types",
     srcs = [
         "//src/workerd/tools:api_encoder",
+        "//src/workerd/tools:param_extractor",
     ],
     args = [
-        "src/workerd/tools",
+        "--input-ast-json",
+        "src/workerd/tools/param-names.json",
         "--output",
         "types/definitions",
         "--format",
-    ],
+    ] + [[
+        "--input-capnp",
+        capnp_file,
+    ] for capnp_file in "$(locations api_encoder)".split()],
     out_dirs = ["definitions"],
     silent_on_success = False,  # Always enable logging for debugging
     tool = ":types_bin",
