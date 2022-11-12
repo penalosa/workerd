@@ -43,7 +43,7 @@ function validateBinaryVersion(...command: string[]): void {
     })
     .toString()
     .trim();
-  if (stdout !== LATEST_COMPATIBILITY_DATE) {
+  if (stdout !== `workerd ${LATEST_COMPATIBILITY_DATE}`) {
     throw new Error(
       `Expected ${JSON.stringify(
         LATEST_COMPATIBILITY_DATE
