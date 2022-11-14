@@ -54,11 +54,35 @@ jobs:
         with:
           name: ${{ runner.os }}-${{ runner.arch }}-binary
           path: bazel-bin/src/workerd/server/workerd
+  build-types:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v2
+      - name: Cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ~/bazel-disk-cache
+          key: ${{ runner.os }}-${{ runner.arch }}-bazel-disk-cache
+      - name: install dependencies
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+            export DEBIAN_FRONTEND=noninteractive
+            sudo apt-get install -y build-essential git clang libc++-dev
+      - name: build types
+        run: |
+            bazel build --disk_cache=~/bazel-disk-cache  --remote_cache=https://bazel:${{ secrets.BAZEL_CACHE_KEY }}@bazel-remote-cache.devprod.cloudflare.dev //types:types
+      - name: Upload types
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: TypeScript Definitions
+          path: bazel-bin/types/definitions
   check-tag:
     name: Check tag is new
     outputs:
       exists: ${{ steps.check_tag.outputs.exists }}
-    needs: [version, build]
+    needs: [version, build, build-types]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -76,7 +100,7 @@ jobs:
     name: Tag & Release
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-    needs: [check-tag, version, build]
+    needs: [check-tag, version, build, build-types]
     runs-on: ubuntu-latest
     if: needs.check-tag.outputs.exists != 'true'
     steps:
