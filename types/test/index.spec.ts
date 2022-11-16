@@ -114,7 +114,7 @@ test("main: generates types", async () => {
   const inputDir = path.join(tmpPath, "capnp");
   await fs.mkdir(inputDir);
   const inputPath = path.join(inputDir, "types.api.capnp.bin");
-  const outputPath = path.join(definitionsDir, "types", "api.d.ts");
+  const outputPath = path.join(definitionsDir, "types", "index.d.ts");
 
   await fs.writeFile(inputPath, new Uint8Array(message.toArrayBuffer()));
 

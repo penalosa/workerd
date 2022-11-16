@@ -221,8 +221,8 @@ export async function main(args?: string[]) {
       const output = path.resolve(options.output);
       const [date] = file.split(".api.capnp.bin");
       await mkdir(path.join(output, date), { recursive: true });
-      await writeFile(path.join(output, date, "api.d.ts"), ambient);
-      const importableFile = path.join(output, date, "api.ts");
+      await writeFile(path.join(output, date, "index.d.ts"), ambient);
+      const importableFile = path.join(output, date, "index.ts");
       await writeFile(importableFile, importable);
     }
   }
